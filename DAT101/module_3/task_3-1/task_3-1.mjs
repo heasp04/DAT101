@@ -80,15 +80,15 @@ if(monthName == "January" ||
    monthName == "July" || 
    monthName == "August" || 
    monthName == "October" ||
-   monthName == "December"){
-
+   monthName == "December")
+  {
   answer = "The month contains 31 days";
 
 } else if(monthName == "April" || 
           monthName == "June" || 
           monthName == "September" || 
-          monthName == "November"){
-
+          monthName == "November")
+         {
   answer = "The month contains 30 days";
 
 } else if (monthName == "February"){
