@@ -273,5 +273,6 @@ while(yahtzee != true){
     throwAmounts++;
 }
 
+
 printOut(diceThrows.join(", "));
 printOut("It took " + throwAmounts + " throws to get a Yahtzee");
