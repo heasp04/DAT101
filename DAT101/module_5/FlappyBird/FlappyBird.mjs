@@ -1,9 +1,16 @@
 "use strict";
+import lib2D from "../../common/libs/lib2D.mjs";
 import libSound from "../../common/libs/libSound.mjs";
+import libSprite from "../../common/libs/libSprite.mjs";
+import TPlayer from "./player.mjs";
+import TObstacle from "./obstacle.mjs";
 
 //--------------- Objects and Variables ----------------------------------//
 const chkMuteSound = document.getElementById("chkMuteSound");
 const rbDayNight = document.getElementsByName("rbDayNight");
+const cvs = document.getElementById("cvs");
+const spriteCvs = new libSprite.TSpriteCanvas(cvs);
+
 
 // prettier-ignore
 export const SpriteInfoList = {
@@ -26,6 +33,11 @@ export const SpriteInfoList = {
 export const GameProps = {
   soundMuted: false,
   dayTime: true,
+  speed: 1,
+  background: null,
+  ground: null,
+  player: null,
+  obstacles: [],
 };
 
 //--------------- Functions ----------------------------------------------//
@@ -38,6 +50,81 @@ function playSound(aSound) {
   }
 }
 
+function loadGame(){
+  console.log("Game ready to load");
+  cvs.width = SpriteInfoList.background.width;
+  cvs.height = SpriteInfoList.background.height;
+
+  let pos = new lib2D.TPosition(0,0);
+  GameProps.background = new libSprite.TSprite(spriteCvs, SpriteInfoList.background, pos);
+
+  pos.y = cvs.height - SpriteInfoList.ground.height;
+  GameProps.ground = new libSprite.TSprite(spriteCvs, SpriteInfoList.ground, pos);
+
+  //Place player
+  pos.x = (cvs.width / 2) - SpriteInfoList.hero1.width;
+  pos.y = (cvs.height / 2) - SpriteInfoList.hero1.height;
+  GameProps.player = new TPlayer(spriteCvs, SpriteInfoList.hero1, pos);
+
+  requestAnimationFrame(drawGame);
+  spawnObstacle();
+  setInterval(animateGame, 10);
+}
+
+function drawGame(){
+  spriteCvs.clearCanvas();
+  GameProps.background.draw();
+  drawObstacles();
+  GameProps.ground.draw();
+  GameProps.player.draw();
+  
+
+  requestAnimationFrame(drawGame);
+}
+
+function drawObstacles(){
+  for(let i = 0; i < GameProps.obstacles.length; i++){
+    const obstacle = GameProps.obstacles[i];
+    obstacle.draw();
+  }
+
+}
+
+function animateGame(){
+  GameProps.ground.translate(-GameProps.speed, 0);
+
+  if(GameProps.ground.posX <= -SpriteInfoList.background.width){
+    GameProps.ground.posX = 0;
+  } 
+
+  let delObstacleIndex = -1;
+
+  for(let i = 0; i < GameProps.obstacles.length; i++){
+    const obstacle = GameProps.obstacles[i];
+    obstacle.update(); 
+
+    if(obstacle.posX < -100){
+      delObstacleIndex = i;
+    }
+
+    if(delObstacleIndex >= 0){
+      GameProps.obstacles.splice(delObstacleIndex, 1);
+    }
+
+  }
+
+  GameProps.player.update();
+}
+
+function spawnObstacle(){
+  const obstacle = new TObstacle(spriteCvs, SpriteInfoList.obstacle);
+  GameProps.obstacles.push(obstacle);
+  
+  //Spawns a new obstacle in 10-30 seconds
+  const seconds = Math.ceil(Math.random() * 6) + 2;
+
+  setTimeout(spawnObstacle, seconds * 1000);
+}
 //--------------- Event Handlers -----------------------------------------//
 
 function setSoundOnOff() {
@@ -60,7 +147,21 @@ function setDayNight() {
   }
 } // end of setDayNight
 
+function onKeyDown(aEvent){
+  console.log("Key down: " + aEvent.code);
+  switch(aEvent.code){
+    case "Space":
+      GameProps.player.flap();
+      break;
+  }
+
+}
+
 //--------------- Main Code ----------------------------------------------//
 chkMuteSound.addEventListener("change", setSoundOnOff);
 rbDayNight[0].addEventListener("change", setDayNight);
 rbDayNight[1].addEventListener("change", setDayNight);
+
+spriteCvs.loadSpriteSheet("./Media/FlappyBirdSprites.png", loadGame);
+document.addEventListener("keydown", onKeyDown);
+
