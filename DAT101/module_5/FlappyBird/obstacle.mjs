@@ -40,10 +40,12 @@ class TObstacle {
         this.#lower.translate(-1, 0);
         
         const hasCollided = 
-        GameProps.player.hasCollided(this.#upper.boundingBox) ||
-        GameProps.player.hasCollided(this.#lower.boundingBox);
+        GameProps.player.hasCollided(this.#upper) ||
+        GameProps.player.hasCollided(this.#lower);
 
         if(hasCollided){
+            GameProps.player.flap();
+            GameProps.player.isDead = true;
             console.log("Ya died");
         }
         

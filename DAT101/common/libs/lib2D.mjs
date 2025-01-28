@@ -41,6 +41,11 @@ class TRectangle extends TPosition {
         this.width = aWidth;
         this.height = aHeight;
     }
+    
+    set center(aPoint){
+        this.x = aPoint.x - this.width / 2;
+        this.y = aPoint.y - this.height / 2;
+    }
 
     get left(){
         return this.x;
@@ -55,7 +60,10 @@ class TRectangle extends TPosition {
     }
 
     get bottom(){
-        return this.y + this.width;
+        return this.y + this.height;
+    }
+    get center(){
+        return new TPosition(this.x + this.width / 2, this.y + this.height / 2);
     }
 
     isInsideRect(aRectangle){
@@ -66,7 +74,35 @@ class TRectangle extends TPosition {
         return true;
 
     }
-}
+
+    isPositionInside(aPosition){
+        if(this.left >= aPosition.x) return false;
+        if(this.right <= aPosition.x) return false;
+        if(this.top >= aPosition.y) return false;
+        if(this.bottom <= aPosition.y) return false;
+        return true;
+    }
+} //end of rectangle
+
+const rad = Math.PI / 180;
+
+class TSinWave {
+    #amplitude;
+    #frequency;
+    #angle;
+
+    constructor(aAmplitude, aFrequency){
+        this.#amplitude = aAmplitude;
+        this.#frequency = aFrequency;
+        this.#angle = 0;
+    }
+
+    get value(){
+        let value = this.#amplitude * Math.sin(this.#angle * rad);
+        this.#angle += this.#frequency;
+        return value;
+    }
+} //end of TSinWave
 
 export default {
     /**
@@ -97,5 +133,11 @@ export default {
      * @param {number} aY - The y-coordinate
      *  
      */
-    TRectangle
+    TRectangle,
+
+    /**
+     * @class TSinWave
+     * @description A class representation for a sine wave
+     */
+    TSinWave
 }

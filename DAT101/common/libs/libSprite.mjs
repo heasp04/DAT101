@@ -10,11 +10,14 @@ class TSpriteCanvas {
     #cvs;
     #ctx;
     #img;
+    #boundingRect;
 
     constructor(aCanvas){
         this.#cvs = aCanvas;
         this.#ctx = aCanvas.getContext("2d");
         this.#img = new Image();
+        this.#boundingRect = this.#cvs.getBoundingClientRect();
+        this.mousePos = new lib2D.TPosition(0, 0);
     }
 
     loadSpriteSheet(aFileName, aLoadedFinal){
@@ -22,7 +25,7 @@ class TSpriteCanvas {
         this.#img.src = aFileName;
     }
 
-    drawSprite(aSpriteInfo, aDx = 0, aDy = 0, aIndex){
+    drawSprite(aSpriteInfo, aDx = 0, aDy = 0, aIndex = 0, aRot = 0){
         let index = aIndex;
 
         const sourceX = aSpriteInfo.x + (index * aSpriteInfo.width);
@@ -34,12 +37,43 @@ class TSpriteCanvas {
         const dy = aDy;
         const dw = sourceWidth;
         const dh = sourceHeight;
-        this.#ctx.drawImage(this.#img, sourceX, sourceY, sourceWidth, sourceHeight, dx, dy, dw, dh);
+
+        if(aRot !== 0){
+            //Sjekk denne i Git om noe ikke passer/funker
+            const centerX = dx + dw / 2;
+            const centerY = dy + dh / 2;
+
+            const rad = aRot * Math.PI / 180;
+            this.#ctx.translate(centerX, centerY);
+            this.#ctx.rotate(rad);
+            this.#ctx.drawImage(this.#img, sourceX, sourceY, sourceWidth, sourceHeight, -dw / 2, -dh / 2, dw, dh);
+            this.#ctx.rotate(-rad);
+            this.#ctx.translate(-centerX, -centerY);
+        } else {
+            this.#ctx.drawImage(this.#img, sourceX, sourceY, sourceWidth, sourceHeight, dx, dy, dw, dh);
+        }
     }
 
     clearCanvas(){
         this.#ctx.clearRect(0, 0, this.#cvs.width, this.#cvs.height);
     }
+
+    addEventListener(aType, aListener){
+        this.#cvs.addEventListener(aType, aListener);
+    }
+
+    getMousePos(aEvent){
+        this.mousePos.x = aEvent.clientX - this.#boundingRect.left;
+        this.mousePos.y = aEvent.clientY - this.#boundingRect.top;
+
+        return this.mousePos;
+    }
+
+    get style(){
+        return this.#cvs.style;
+    }
+
+    
 } //End of TSpriteCanvas
 
 class TSprite {
@@ -49,6 +83,7 @@ class TSprite {
     #index;
     #speedIndex;
     
+    rotation;
     boundingBox;
     animationSpeed;
 
@@ -59,8 +94,10 @@ class TSprite {
         this.#index = 0;
         this.#speedIndex = 0;
 
+        this.rotation = 0;
         this.animationSpeed = 0;
         this.boundingBox = new lib2D.TRectangle(this.#pos.x, this.#pos.y, this.#spriteInfo.width, this.#spriteInfo.height);
+        
     }
 
     get posX(){
@@ -69,6 +106,14 @@ class TSprite {
 
     get posY(){
         return this.#pos.y;
+    }
+
+    getPos(){
+        return this.#pos.x, this.#pos.y;
+    }
+
+    getCenter(){
+        return this.boundingBox.center;
     }
 
     set posX(aX){
@@ -80,6 +125,12 @@ class TSprite {
         this.#pos.y = aY;
         this.boundingBox.y = aY;
     }
+
+    set index(aIndex){
+        this.#index = aIndex;
+    }
+
+    
     
     /*set animationSpeed(aSpeed){
         this.animationSpeed = aSpeed;
@@ -90,10 +141,6 @@ class TSprite {
         this.#pos.y = aY;
         this.boundingBox.x = aX;
         this.boundingBox.y = aY;
-    }
-
-    set index(aIndex){
-        this.#index = aIndex;
     }
 
     draw(){
@@ -109,14 +156,14 @@ class TSprite {
                 }
             }
         }
-        this.#spriteCanvas.drawSprite(this.#spriteInfo, this.#pos.x, this.#pos.y, this.#index);   
+        this.#spriteCanvas.drawSprite(this.#spriteInfo, this.#pos.x, this.#pos.y, this.#index, this.rotation);   
     }
 
     translate(aDx, aDy){
         this.#pos.x += aDx;
         this.#pos.y += aDy;
-        this.boundingBox.x = aDx;
-        this.boundingBox.y = aDy;
+        this.boundingBox.x += aDx;
+        this.boundingBox.y += aDy;
     }
 
     hasCollided(aSpriteInfo){

@@ -4,6 +4,8 @@ import libSound from "../../common/libs/libSound.mjs";
 import libSprite from "../../common/libs/libSprite.mjs";
 import TPlayer from "./player.mjs";
 import TObstacle from "./obstacle.mjs";
+import {TBait} from "./bait.mjs";
+import { TMenu } from "./menu.mjs";
 
 //--------------- Objects and Variables ----------------------------------//
 const chkMuteSound = document.getElementById("chkMuteSound");
@@ -23,21 +25,31 @@ export const SpriteInfoList = {
   ground:       { x:  246, y: 512, width: 1152, height: 114, count:  1 },
   numberSmall:  { x:  681, y: 635, width:   14, height:  20, count: 10 },
   numberBig:    { x:  422, y: 635, width:   24, height:  36, count: 10 },
-  buttonPLay:   { x: 1183, y: 635, width:  104, height:  58, count:  1 },
+  buttonPlay:   { x: 1183, y: 635, width:  104, height:  58, count:  1 },
   gameOver:     { x:    0, y: 384, width:  226, height: 114, count:  1 },
   infoText:     { x:    0, y: 630, width:  200, height:  55, count:  2 },
   food:         { x:    0, y: 696, width:   70, height:  65, count: 34 },
   medal:        { x:  985, y: 635, width:   44, height:  44, count:  4 },
 };
 
+export const EGameStatus = {
+  idle: 0,
+  getReady: 1,
+  playing: 2,
+  gameOver: 3
+};
+
 export const GameProps = {
   soundMuted: false,
   dayTime: true,
   speed: 1,
+  status: EGameStatus.idle, //Status for testing. Normalt EGameStatus.idle
   background: null,
   ground: null,
   player: null,
   obstacles: [],
+  baits: [],
+  menu: null,
 };
 
 //--------------- Functions ----------------------------------------------//
@@ -55,28 +67,37 @@ function loadGame(){
   cvs.width = SpriteInfoList.background.width;
   cvs.height = SpriteInfoList.background.height;
 
+  //Creates Menu
+  GameProps.menu = new TMenu(spriteCvs);
+
+  //Places background
   let pos = new lib2D.TPosition(0,0);
   GameProps.background = new libSprite.TSprite(spriteCvs, SpriteInfoList.background, pos);
 
+  //Places ground
   pos.y = cvs.height - SpriteInfoList.ground.height;
   GameProps.ground = new libSprite.TSprite(spriteCvs, SpriteInfoList.ground, pos);
 
   //Place player
-  pos.x = (cvs.width / 2) - SpriteInfoList.hero1.width;
-  pos.y = (cvs.height / 2) - SpriteInfoList.hero1.height;
+  pos.x = (cvs.width / 2) - SpriteInfoList.hero1.width / 2;
+  pos.y = (cvs.height / 2) - SpriteInfoList.hero1.height /2;
   GameProps.player = new TPlayer(spriteCvs, SpriteInfoList.hero1, pos);
 
   requestAnimationFrame(drawGame);
   spawnObstacle();
+  spawnBait();
   setInterval(animateGame, 10);
+
 }
 
 function drawGame(){
   spriteCvs.clearCanvas();
   GameProps.background.draw();
   drawObstacles();
+  drawBait();
   GameProps.ground.draw();
   GameProps.player.draw();
+  GameProps.menu.draw();
   
 
   requestAnimationFrame(drawGame);
@@ -90,41 +111,97 @@ function drawObstacles(){
 
 }
 
-function animateGame(){
-  GameProps.ground.translate(-GameProps.speed, 0);
-
-  if(GameProps.ground.posX <= -SpriteInfoList.background.width){
-    GameProps.ground.posX = 0;
-  } 
-
-  let delObstacleIndex = -1;
-
-  for(let i = 0; i < GameProps.obstacles.length; i++){
-    const obstacle = GameProps.obstacles[i];
-    obstacle.update(); 
-
-    if(obstacle.posX < -100){
-      delObstacleIndex = i;
-    }
-
-    if(delObstacleIndex >= 0){
-      GameProps.obstacles.splice(delObstacleIndex, 1);
-    }
-
+function drawBait(){
+  for(let i = 0; i < GameProps.baits.length; i++){
+    const bait = GameProps.baits[i];
+    bait.draw();
   }
-
-  GameProps.player.update();
 }
 
+function animateGame(){
+  //Stops game if dead
+  switch(GameProps.status){
+    case EGameStatus.playing:
+      if(GameProps.player.isDead){
+        GameProps.player.animationSpeed = 0;
+        GameProps.player.update();
+        return;
+      }
+    
+      GameProps.ground.translate(-GameProps.speed, 0);
+
+    if(GameProps.ground.posX <= -SpriteInfoList.background.width){
+      GameProps.ground.posX = 0;
+    } 
+
+    let delObstacleIndex = -1;
+    for(let i = 0; i < GameProps.obstacles.length; i++){
+      const obstacle = GameProps.obstacles[i];
+      obstacle.update(); 
+
+      if(obstacle.posX < -100){
+        delObstacleIndex = i;
+      }
+
+      if(delObstacleIndex >= 0){
+        GameProps.obstacles.splice(delObstacleIndex, 1);
+      }
+
+    }
+    GameProps.player.update();
+
+    case EGameStatus.gameOver:
+      let delBaitIndex = -1;
+      const posPlayer = GameProps.player.getCenter();
+
+      for(let i = 0; i < GameProps.baits.length; i++){
+        const bait = GameProps.baits[i];
+        bait.update();
+        const posBait = bait.getCenter();
+        const distance = posPlayer.distanceToPoint(posBait);
+        if(distance < 20){
+          delBaitIndex = i;
+        }
+
+      }
+      if(delBaitIndex >= 0){
+        GameProps.baits.splice(delBaitIndex, 1);
+      }
+    
+    break;
+    case EGameStatus.idle:
+      GameProps.player.updateIdle();
+      break;
+
+  }
+  
+  
+}
+
+// Spawning
 function spawnObstacle(){
   const obstacle = new TObstacle(spriteCvs, SpriteInfoList.obstacle);
   GameProps.obstacles.push(obstacle);
   
   //Spawns a new obstacle in 10-30 seconds
-  const seconds = Math.ceil(Math.random() * 6) + 2;
-
-  setTimeout(spawnObstacle, seconds * 1000);
+  if(GameProps.status === EGameStatus.playing){
+    const seconds = Math.ceil(Math.random() * 6) + 2;
+    setTimeout(spawnObstacle, seconds * 1000);
+  }
 }
+
+function spawnBait(){
+  const pos = new lib2D.TPosition(SpriteInfoList.background.width, 100);
+  const bait = new TBait(spriteCvs, SpriteInfoList.food, pos);
+  GameProps.baits.push(bait);
+
+  if(GameProps.status === EGameStatus.playing){
+    const seconds = Math.ceil(Math.random() * 5) / 10 + 0.5;
+    setTimeout(spawnBait, seconds * 1000);
+  }
+}
+
+
 //--------------- Event Handlers -----------------------------------------//
 
 function setSoundOnOff() {
@@ -151,7 +228,9 @@ function onKeyDown(aEvent){
   console.log("Key down: " + aEvent.code);
   switch(aEvent.code){
     case "Space":
+      if(!GameProps.player.isDead){
       GameProps.player.flap();
+      }
       break;
   }
 
