@@ -50,6 +50,8 @@ export const GameProps = {
   obstacles: [],
   baits: [],
   menu: null,
+  score: 0,
+  bestScore: 0,
 };
 
 //--------------- Functions ----------------------------------------------//
@@ -60,6 +62,21 @@ function playSound(aSound) {
   } else {
     aSound.pause();
   }
+}
+
+export function startGame(){
+  const pos = new lib2D.TPosition(0, 0);
+  pos.x = (cvs.width / 2) - SpriteInfoList.hero1.width / 2;
+  pos.y = (cvs.height / 2) - SpriteInfoList.hero1.height /2 - 75;
+
+  GameProps.player = new TPlayer(spriteCvs, SpriteInfoList.hero1, pos);
+  GameProps.obstacles = [];
+  GameProps.baits = [];
+  GameProps.menu.reset();
+  GameProps.status = EGameStatus.playing;
+
+  spawnObstacle();
+  spawnBait();
 }
 
 function loadGame(){
@@ -80,15 +97,13 @@ function loadGame(){
 
   //Place player
   pos.x = (cvs.width / 2) - SpriteInfoList.hero1.width / 2;
-  pos.y = (cvs.height / 2) - SpriteInfoList.hero1.height /2;
+  pos.y = (cvs.height / 2) - SpriteInfoList.hero1.height /2 - 75 ;
   GameProps.player = new TPlayer(spriteCvs, SpriteInfoList.hero1, pos);
 
   requestAnimationFrame(drawGame);
-  spawnObstacle();
-  spawnBait();
   setInterval(animateGame, 10);
 
-}
+} //end of loadGame
 
 function drawGame(){
   spriteCvs.clearCanvas();
@@ -135,9 +150,17 @@ function animateGame(){
     } 
 
     let delObstacleIndex = -1;
+    
+
     for(let i = 0; i < GameProps.obstacles.length; i++){
       const obstacle = GameProps.obstacles[i];
       obstacle.update(); 
+
+      if(obstacle.right < GameProps.player.left && !obstacle.hasPassed){
+        GameProps.menu.increaseScore(20);
+
+        obstacle.hasPassed = true;
+      }
 
       if(obstacle.posX < -100){
         delObstacleIndex = i;
@@ -166,6 +189,7 @@ function animateGame(){
       }
       if(delBaitIndex >= 0){
         GameProps.baits.splice(delBaitIndex, 1);
+        GameProps.menu.increaseScore(10);
       }
     
     break;
@@ -196,7 +220,7 @@ function spawnBait(){
   GameProps.baits.push(bait);
 
   if(GameProps.status === EGameStatus.playing){
-    const seconds = Math.ceil(Math.random() * 5) / 10 + 0.5;
+    const seconds = Math.ceil(Math.random() * 10) / 10 + 1;
     setTimeout(spawnBait, seconds * 1000);
   }
 }

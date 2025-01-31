@@ -8,6 +8,8 @@ class TObstacle {
     #upper;
     #lower;
 
+    hasPassed;
+
     constructor(aSpriteCanvas, aSpriteInfo){
         this.#spriteInfo = aSpriteInfo;
 
@@ -20,7 +22,7 @@ class TObstacle {
         this.#upper = new libSprite.TSprite(aSpriteCanvas, aSpriteInfo, posU);
         this.#upper.index = 3;
         const groundY = GameProps.ground.posY;
-        top += this.#spriteInfo.height + 150;
+        top += this.#spriteInfo.height + 170;
         const gap = top - groundY - 25;
 
         top = Math.floor(Math.random() * gap) + groundY -25;
@@ -29,10 +31,20 @@ class TObstacle {
         const posL = new lib2D.TPosition(spawnPointX, top);
         this.#lower = new libSprite.TSprite(aSpriteCanvas, aSpriteInfo, posL);
         this.#lower.index = 2;
+
+        this.hasPassed = false;
     }
 
     get posX(){
         return this.#upper.posX;
+    }
+
+    get right(){
+        return this.#upper.right;
+    }
+
+    get left(){
+        return this.#upper.left;
     }
 
     update(){

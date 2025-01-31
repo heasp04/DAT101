@@ -54,6 +54,13 @@ class TSpriteCanvas {
         }
     }
 
+    drawText(aText, aPos){
+        this.#ctx.font = "25px Arial";
+        this.#ctx.fillStyle = "#333333";
+        this.#ctx.textAlign = "right";
+        this.#ctx.fillText(aText, aPos.x, aPos.y);
+    }
+
     clearCanvas(){
         this.#ctx.clearRect(0, 0, this.#cvs.width, this.#cvs.height);
     }
@@ -107,6 +114,20 @@ class TSprite {
     get posY(){
         return this.#pos.y;
     }
+
+    get left(){
+        return this.#pos.x;
+    }
+
+    get right(){
+        return this.#pos.x + this.#spriteInfo.width;
+    }
+
+    get index(){
+        return this.#index;
+    }
+
+
 
     getPos(){
         return this.#pos.x, this.#pos.y;
@@ -171,6 +192,7 @@ class TSprite {
     }
 
 } //End of TSprite
+
 
 
 /*class Square {
