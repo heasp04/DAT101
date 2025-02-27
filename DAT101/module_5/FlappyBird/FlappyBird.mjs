@@ -41,7 +41,7 @@ export const EGameStatus = {
 
 export const GameProps = {
   soundMuted: false,
-  dayTime: true,
+  dayTime: rbDayNight[0].checked, //Dersom daytime: true, vil den være true når spillet *starter* som night, pga hvordan Radio buttons fungerer 
   speed: 1,
   status: EGameStatus.idle, //Status for testing. Normalt EGameStatus.idle
   background: null,
@@ -85,6 +85,10 @@ export function startGame(){
 }
 
 function loadGame(){
+  console.log(rbDayNight[0].checked);
+  console.log(GameProps.dayTime);
+  //
+
   console.log("Game ready to load");
   cvs.width = SpriteInfoList.background.width;
   cvs.height = SpriteInfoList.background.height;
@@ -93,7 +97,7 @@ function loadGame(){
   GameProps.menu = new TMenu(spriteCvs);
 
   //Places background
-  let pos = new lib2D.TPosition(0,0);
+  let pos = new lib2D.TPosition(0,0); 
   GameProps.background = new libSprite.TSprite(spriteCvs, SpriteInfoList.background, pos);
 
   //Places ground
@@ -120,6 +124,11 @@ function loadGame(){
 
 function drawGame(){
   spriteCvs.clearCanvas();
+  if(GameProps.dayTime === false){
+    GameProps.background.index = 1;
+  } else {
+    GameProps.background.index = 0;
+  }
   GameProps.background.draw();
   drawObstacles();
   drawBait();

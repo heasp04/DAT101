@@ -64,6 +64,13 @@ class TObstacle {
     }
 
     draw(){
+        if(GameProps.dayTime === false){
+            this.#upper.index = 1;
+            this.#lower.index = 0;
+        } else {
+            this.#upper.index = 3;
+            this.#lower.index = 2;
+        }
         this.#upper.draw();
         this.#lower.draw();
     }
