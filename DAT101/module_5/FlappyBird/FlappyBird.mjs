@@ -57,7 +57,7 @@ export const GameProps = {
 
 //--------------- Functions ----------------------------------------------//
 
-function playSound(aSound) {
+export function playSound(aSound) {
   if (!GameProps.soundMuted) {
     aSound.play();
   } else {
@@ -80,7 +80,7 @@ export function startGame(){
   spawnObstacle();
   spawnBait();
 
-  GameProps.sounds.running.play();
+  playSound(GameProps.sounds.running);
 
 }
 
@@ -115,7 +115,7 @@ function loadGame(){
   GameProps.sounds.dead = new libSound.TSoundFile("./Media/gameOver.mp3");
   GameProps.sounds.food = new libSound.TSoundFile("./Media/food.mp3");
   GameProps.sounds.countDown = new libSound.TSoundFile("./Media/countDown.mp3");
-
+  GameProps.sounds.flap = new libSound.TSoundFile("./Media/flap.mp3");
 
   requestAnimationFrame(drawGame);
   setInterval(animateGame, 10);
@@ -213,7 +213,7 @@ function animateGame(){
       if(delBaitIndex >= 0){
         GameProps.baits.splice(delBaitIndex, 1);
         GameProps.sounds.food.stop();
-        GameProps.sounds.food.play();
+        playSound(GameProps.sounds.food);
         GameProps.menu.increaseScore(10);
       }
     
@@ -277,6 +277,8 @@ function onKeyDown(aEvent){
   console.log("Key down: " + aEvent.code);
   switch(aEvent.code){
     case "Space":
+      GameProps.sounds.flap.stop();
+      playSound(GameProps.sounds.flap);
       if(!GameProps.player.isDead){
       GameProps.player.flap();
       }

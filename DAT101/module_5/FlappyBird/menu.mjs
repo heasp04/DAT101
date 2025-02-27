@@ -1,7 +1,7 @@
 "use strict";
 import lib2D from "../../common/libs/lib2D.mjs";
 import libSprite from "../../common/libs/libSprite.mjs";
-import { SpriteInfoList, GameProps, EGameStatus, startGame} from "./FlappyBird.mjs";
+import { SpriteInfoList, GameProps, EGameStatus, startGame, playSound} from "./FlappyBird.mjs";
 
 export class TMenu{
     #spGameName;
@@ -78,14 +78,14 @@ export class TMenu{
                 this.#spPlayButton.draw();
                 break;
             case EGameStatus.getReady:
-                GameProps.sounds.countDown.play();
+                playSound(GameProps.sounds.countDown);
                 this.#spGetReady.index = 0;
                 this.#spGetReady.draw();
                 this.#spNumber.draw();
                 break;
             case EGameStatus.gameOver:
                 GameProps.sounds.running.stop();
-                GameProps.sounds.gameOver.play();
+                playSound(GameProps.sounds.gameOver);
                 this.#spGetReady.index = 1;
                 this.#spGetReady.draw();
                 this.#spGameOver.draw();
@@ -131,6 +131,7 @@ export class TMenu{
         GameProps.sounds.gameOver.stop();
         GameProps.sounds.dead.stop();
         GameProps.sounds.countDown.stop();
+        GameProps.sounds.flap.stop();
     }
 
     #onMouseMove = (aEvent) => {

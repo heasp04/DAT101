@@ -1,7 +1,7 @@
 "use strict";
 import lib2D from "../../common/libs/lib2D.mjs";
 import libSprite from "../../common/libs/libSprite.mjs";
-import { EGameStatus, GameProps } from "./FlappyBird.mjs";
+import { EGameStatus, GameProps, playSound } from "./FlappyBird.mjs";
 
 class TPlayer extends libSprite.TSprite{
     #spriteInfo;
@@ -40,7 +40,7 @@ class TPlayer extends libSprite.TSprite{
             GameProps.status = EGameStatus.gameOver;
             this.animationSpeed = 0;
 
-            GameProps.sounds.dead.play();
+            playSound(GameProps.sounds.dead);
         }
     }
 
