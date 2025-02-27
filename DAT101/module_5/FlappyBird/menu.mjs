@@ -78,11 +78,14 @@ export class TMenu{
                 this.#spPlayButton.draw();
                 break;
             case EGameStatus.getReady:
+                GameProps.sounds.countDown.play();
                 this.#spGetReady.index = 0;
                 this.#spGetReady.draw();
                 this.#spNumber.draw();
                 break;
             case EGameStatus.gameOver:
+                GameProps.sounds.running.stop();
+                GameProps.sounds.gameOver.play();
                 this.#spGetReady.index = 1;
                 this.#spGetReady.draw();
                 this.#spGameOver.draw();
@@ -125,6 +128,9 @@ export class TMenu{
     reset(){
         GameProps.score = 0;
         this.#spNumber.index = 3;
+        GameProps.sounds.gameOver.stop();
+        GameProps.sounds.dead.stop();
+        GameProps.sounds.countDown.stop();
     }
 
     #onMouseMove = (aEvent) => {

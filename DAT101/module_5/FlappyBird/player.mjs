@@ -39,6 +39,8 @@ class TPlayer extends libSprite.TSprite{
             this.posY = groundPos;
             GameProps.status = EGameStatus.gameOver;
             this.animationSpeed = 0;
+
+            GameProps.sounds.dead.play();
         }
     }
 

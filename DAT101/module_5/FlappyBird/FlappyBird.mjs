@@ -7,12 +7,12 @@ import TObstacle from "./obstacle.mjs";
 import {TBait} from "./bait.mjs";
 import { TMenu } from "./menu.mjs";
 
+
 //--------------- Objects and Variables ----------------------------------//
 const chkMuteSound = document.getElementById("chkMuteSound");
 const rbDayNight = document.getElementsByName("rbDayNight");
 const cvs = document.getElementById("cvs");
 const spriteCvs = new libSprite.TSpriteCanvas(cvs);
-
 
 // prettier-ignore
 export const SpriteInfoList = {
@@ -52,6 +52,7 @@ export const GameProps = {
   menu: null,
   score: 0,
   bestScore: 0,
+  sounds: {countDown: null, food: null, gameOver: null, dead: null, running: null},
 };
 
 //--------------- Functions ----------------------------------------------//
@@ -63,6 +64,7 @@ function playSound(aSound) {
     aSound.pause();
   }
 }
+
 
 export function startGame(){
   const pos = new lib2D.TPosition(0, 0);
@@ -77,6 +79,9 @@ export function startGame(){
 
   spawnObstacle();
   spawnBait();
+
+  GameProps.sounds.running.play();
+
 }
 
 function loadGame(){
@@ -99,6 +104,14 @@ function loadGame(){
   pos.x = (cvs.width / 2) - SpriteInfoList.hero1.width / 2;
   pos.y = (cvs.height / 2) - SpriteInfoList.hero1.height /2 - 75 ;
   GameProps.player = new TPlayer(spriteCvs, SpriteInfoList.hero1, pos);
+
+  //Load sounds
+  GameProps.sounds.running = new libSound.TSoundFile("./Media/running.mp3");
+  GameProps.sounds.gameOver = new libSound.TSoundFile("./Media/heroIsDead.mp3");
+  GameProps.sounds.dead = new libSound.TSoundFile("./Media/gameOver.mp3");
+  GameProps.sounds.food = new libSound.TSoundFile("./Media/food.mp3");
+  GameProps.sounds.countDown = new libSound.TSoundFile("./Media/countDown.mp3");
+
 
   requestAnimationFrame(drawGame);
   setInterval(animateGame, 10);
@@ -174,6 +187,7 @@ function animateGame(){
     GameProps.player.update();
 
     case EGameStatus.gameOver:
+
       let delBaitIndex = -1;
       const posPlayer = GameProps.player.getCenter();
 
@@ -189,6 +203,8 @@ function animateGame(){
       }
       if(delBaitIndex >= 0){
         GameProps.baits.splice(delBaitIndex, 1);
+        GameProps.sounds.food.stop();
+        GameProps.sounds.food.play();
         GameProps.menu.increaseScore(10);
       }
     
