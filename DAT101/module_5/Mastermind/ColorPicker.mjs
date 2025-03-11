@@ -1,5 +1,5 @@
 "use strict";
-import lib2D from "../../common/libs/lib2d_v2.mjs";
+import lib2D from "../../common/libs/lib2D_v2.mjs";
 import libSprite from "../../common/libs/libSprite_v2.mjs";
 import MastermindBoard from "./MastermindBoard.mjs";
 import { GameProps } from "./Mastermind.mjs";
