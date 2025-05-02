@@ -48,7 +48,24 @@ export const GameProps = {
 //------ Functions
 //--------------------------------------------------------------------------------------------------------------------
 
-function newGame() {
+export function newGame() {
+  //Vi må fjerne alle farger fra colorPickers, her ligger også player answers
+  for(let i = 0; i < GameProps.colorPickers.length; i++){
+    const colorPicker = GameProps.colorPickers[i];
+    spcvs.removeSpriteButton(colorPicker);
+  }
+  GameProps.colorPickers = [];
+  const ColorKeys = Object.keys(MastermindBoard.ColorPicker);
+  
+  GameProps.snapTo.positions = MastermindBoard.ColorAnswer.Row1;
+  moveRoundIndicator();
+
+  for(let i = 0; i < ColorKeys.length; i++){
+    const colorName = ColorKeys[i]; //Color name
+    const colorPicker = new TColorPicker(spcvs, SpriteInfoList.ColorPicker, colorName, i);
+    GameProps.colorPickers.push(colorPicker);
+  }
+
   generateComputerAnswer();
 }
 
@@ -106,14 +123,6 @@ function loadGame() {
   spcvs.updateBoundsRect();
   let pos = new lib2D.TPoint(0, 0);
   GameProps.board = new libSprite.TSprite(spcvs, SpriteInfoList.Board, pos);
- 
-  const ColorKeys = Object.keys(MastermindBoard.ColorPicker);
-  
-  for(let i = 0; i < ColorKeys.length; i++){
-    const colorName = ColorKeys[i]; //Color name
-    const colorPicker = new TColorPicker(spcvs, SpriteInfoList.ColorPicker, colorName, i);
-    GameProps.colorPickers.push(colorPicker);
-  }
 
   pos = GameProps.snapTo.positions[0];
   GameProps.roundIndicator = new libSprite.TSprite(spcvs, SpriteInfoList.ColorHint, pos);
